@@ -20,11 +20,17 @@ public class WikiTextParser {
 	private String redirectString = null;
 	private boolean stub = false;
 	private boolean disambiguation = false;
-	private static Pattern redirectPattern = null;
-	private static Pattern stubPattern = null;
-	private static Pattern disambCatPattern = null;
+
 	private InfoBox infoBox = null;
-	private Language language = null;
+
+	// Formely non constant
+	private static final Language language = new Language("en");
+	private static final Pattern redirectPattern = Pattern
+			.compile("#" + Language.getLocalizedRedirectLabel() + "\\s*\\[\\[(.*?)\\]\\]", Pattern.CASE_INSENSITIVE);;
+	private static Pattern stubPattern = Pattern.compile("\\-" + language.getLocalizedStubLabel() + "\\}\\}",
+			Pattern.CASE_INSENSITIVE);;
+	private static final Pattern disambCatPattern = Pattern
+			.compile("\\{\\{" + language.getDisambiguationLabel() + "\\}\\}", Pattern.CASE_INSENSITIVE);
 
 	private static Pattern stylesPattern = Pattern.compile("\\{\\|.*?\\|\\}$", Pattern.MULTILINE | Pattern.DOTALL);
 	private static Pattern infoboxCleanupPattern = Pattern.compile("\\{\\{infobox.*?\\}\\}$",
@@ -39,6 +45,12 @@ public class WikiTextParser {
 	private static Pattern refCleanupPattern = Pattern.compile("<ref>.*?</ref>", Pattern.MULTILINE | Pattern.DOTALL);
 	private static Pattern commentsCleanupPattern = Pattern.compile("<!--.*?-->", Pattern.MULTILINE | Pattern.DOTALL);
 
+	private static final Language EN = new Language("en");
+
+	boolean foundRedirect = false;
+	boolean computeStub = false;
+	boolean computeDisambiguate = false;
+
 	/**
 	 * Default constructor
 	 * 
@@ -49,14 +61,7 @@ public class WikiTextParser {
 	 */
 	public WikiTextParser(String wikiText, String languageCode) {
 		this.wikiText = wikiText;
-		this.language = new Language(languageCode);
-		createPatterns();
-		findRedirect(wikiText);
-		Matcher matcher;
-		matcher = stubPattern.matcher(wikiText);
-		stub = matcher.find();
-		matcher = disambCatPattern.matcher(wikiText);
-		disambiguation = matcher.find();
+
 	}
 
 	/**
@@ -84,27 +89,44 @@ public class WikiTextParser {
 		}
 	}
 
-	/**
-	 * Create localized patterns (given the {@Language.LanguageCode} in the
-	 * constructor) for redirects, stubs, etc.
-	 */
-	private void createPatterns() {
-		redirectPattern = Pattern.compile("#" + language.getLocalizedRedirectLabel() + "\\s*\\[\\[(.*?)\\]\\]",
-				Pattern.CASE_INSENSITIVE);
-		stubPattern = Pattern.compile("\\-" + language.getLocalizedStubLabel() + "\\}\\}", Pattern.CASE_INSENSITIVE);
-		disambCatPattern = Pattern.compile("\\{\\{" + language.getDisambiguationLabel() + "\\}\\}",
-				Pattern.CASE_INSENSITIVE);
-	}
+	// /**
+	// * Create localized patterns (given the {@Language.LanguageCode} in the
+	// * constructor) for redirects, stubs, etc.
+	// */
+	// private void createPatterns() {
+	// redirectPattern = Pattern.compile("#" +
+	// language.getLocalizedRedirectLabel() + "\\s*\\[\\[(.*?)\\]\\]",
+	// Pattern.CASE_INSENSITIVE);
+	// stubPattern = Pattern.compile("\\-" + language.getLocalizedStubLabel() +
+	// "\\}\\}", Pattern.CASE_INSENSITIVE);
+	// disambCatPattern = Pattern.compile("\\{\\{" +
+	// language.getDisambiguationLabel() + "\\}\\}",
+	// Pattern.CASE_INSENSITIVE);
+	// }
 
 	public boolean isRedirect() {
+		if (!foundRedirect) {
+			findRedirect(wikiText);
+			foundRedirect = true;
+		}
 		return redirect;
 	}
 
 	public boolean isStub() {
+		if (!computeStub) {
+			Matcher matcher;
+			matcher = stubPattern.matcher(wikiText);
+			stub = matcher.find();
+			computeStub = true;
+		}
 		return stub;
 	}
 
 	public String getRedirectText() {
+		if (!foundRedirect) {
+			findRedirect(wikiText);
+			foundRedirect = true;
+		}
 		return redirectString;
 	}
 
@@ -255,6 +277,12 @@ public class WikiTextParser {
 	}
 
 	public boolean isDisambiguationPage() {
+		if (!computeDisambiguate) {
+			Matcher matcher;
+			matcher = disambCatPattern.matcher(wikiText);
+			disambiguation = matcher.find();
+			computeDisambiguate = true;
+		}
 		return disambiguation;
 	}
 
@@ -278,17 +306,17 @@ public class WikiTextParser {
 		String[] split = wikiText.split("\\n");
 		int i = 0;
 		for (String string : split) {
-			if (string.matches("^[^\\{\\|\\*\\}].*")&&string.length()>0) {
+			if (string.matches("^[^\\{\\|\\*\\}].*") && string.length() > 0) {
 				break;
 			}
 			i++;
 		}
-		//System.out.println("Lines "+i);
-		//System.out.println(split[i]);
+		// System.out.println("Lines "+i);
+		// System.out.println(split[i]);
 		int begin = i;
 		for (int j = 0; j < i; j++) {
 			begin += split[j].length();
-			
+
 		}
 		return begin;
 	}

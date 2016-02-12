@@ -1,6 +1,7 @@
 package edu.jhu.nlp.wikipedia;
 
 import java.util.HashMap;
+import java.util.Set;
 
 /**
  * A class abstracting Wiki infobox
@@ -30,6 +31,10 @@ public class InfoBox {
 
 	public String dumpRaw() {
 		return infoBoxWikiText;
+	}
+
+	public Set<String> getKeySet() {
+		return boxMap.keySet();
 	}
 
 	@Override
