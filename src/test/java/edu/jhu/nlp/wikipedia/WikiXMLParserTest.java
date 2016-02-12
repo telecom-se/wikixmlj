@@ -15,7 +15,8 @@ public class WikiXMLParserTest {
             public void process(WikiPage page) {
 
                 assertEquals("Isaac Newton", page.getTitle());
-                assertEquals("14627", page.getID());
+                assertEquals(14627, page.getID());
+                assertEquals(NameSpace.NORMAL,page.getNs());
 
             }
         });

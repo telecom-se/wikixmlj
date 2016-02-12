@@ -32,18 +32,22 @@ public class WikiTextParser {
 	private static final Pattern disambCatPattern = Pattern
 			.compile("\\{\\{" + language.getDisambiguationLabel() + "\\}\\}", Pattern.CASE_INSENSITIVE);
 
-	private static Pattern stylesPattern = Pattern.compile("\\{\\|.*?\\|\\}$", Pattern.MULTILINE | Pattern.DOTALL);
-	private static Pattern infoboxCleanupPattern = Pattern.compile("\\{\\{infobox.*?\\}\\}$",
+	private static final Pattern stylesPattern = Pattern.compile("\\{\\|.*?\\|\\}$",
+			Pattern.MULTILINE | Pattern.DOTALL);
+	private static final Pattern infoboxCleanupPattern = Pattern.compile("\\{\\{infobox.*?\\}\\}$",
 			Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-	private static Pattern curlyCleanupPattern0 = Pattern.compile("^\\{\\{.*?\\}\\}$",
+	private static final Pattern curlyCleanupPattern0 = Pattern.compile("^\\{\\{.*?\\}\\}$",
 			Pattern.MULTILINE | Pattern.DOTALL);
-	private static Pattern curlyCleanupPattern1 = Pattern.compile("\\{\\{.*?\\}\\}",
+	private static final Pattern curlyCleanupPattern1 = Pattern.compile("\\{\\{.*?\\}\\}",
 			Pattern.MULTILINE | Pattern.DOTALL);
-	private static Pattern cleanupPattern0 = Pattern.compile("^\\[\\[.*?:.*?\\]\\]$",
+	private static final Pattern cleanupPattern0 = Pattern.compile("^\\[\\[.*?:.*?\\]\\]$",
 			Pattern.MULTILINE | Pattern.DOTALL);
-	private static Pattern cleanupPattern1 = Pattern.compile("\\[\\[(.*?)\\]\\]", Pattern.MULTILINE | Pattern.DOTALL);
-	private static Pattern refCleanupPattern = Pattern.compile("<ref>.*?</ref>", Pattern.MULTILINE | Pattern.DOTALL);
-	private static Pattern commentsCleanupPattern = Pattern.compile("<!--.*?-->", Pattern.MULTILINE | Pattern.DOTALL);
+	private static final Pattern cleanupPattern1 = Pattern.compile("\\[\\[(.*?)\\]\\]",
+			Pattern.MULTILINE | Pattern.DOTALL);
+	private static Pattern refCleanupPattern = Pattern.compile("<ref.*?</ref>", Pattern.MULTILINE | Pattern.DOTALL);
+	private static final Pattern chevronPattern = Pattern.compile("<.*?>", Pattern.MULTILINE | Pattern.DOTALL);
+	private static final Pattern commentsCleanupPattern = Pattern.compile("<!--.*?-->",
+			Pattern.MULTILINE | Pattern.DOTALL);
 
 	private static final Language EN = new Language("en");
 
@@ -109,7 +113,7 @@ public class WikiTextParser {
 			findRedirect(wikiText);
 			foundRedirect = true;
 		}
-		return redirect;
+		return redirect || wikiText.startsWith("#REDIRECT");
 	}
 
 	public boolean isStub() {
@@ -296,17 +300,27 @@ public class WikiTextParser {
 	}
 
 	public String getSummary() {
-		int startIndex = getFirstIndex2();
-		int endIndex = getLastIndex();
-		return wikiText.substring(startIndex, endIndex);
+		String text = commentsCleanupPattern.matcher(wikiText).replaceAll("");
+		int startIndex = getFirstIndex2(text);
+		int endIndex = getLastIndex(text);
+		text = text.substring(startIndex, endIndex);
+		// remove all citations
+		//text = clearCitation(text);
+		text = refCleanupPattern.matcher(text).replaceAll("");
+		text = curlyCleanupPattern0.matcher(text).replaceAll("");
+		text = curlyCleanupPattern1.matcher(text).replaceAll("");
+		text = chevronPattern.matcher(text).replaceAll("");
+		// text = text.replaceAll("<ref.*?/>", "");
+		// text = text.replaceAll("\\{\\{cite.*?\\}\\}", "");
+		return text;
 
 	}
 
-	private int getFirstIndex2() {
-		String[] split = wikiText.split("\\n");
+	private int getFirstIndex2(String text) {
+		String[] split = text.split("\\n");
 		int i = 0;
 		for (String string : split) {
-			if (string.matches("^[^\\{\\|\\*\\}].*") && string.length() > 0) {
+			if (string.trim().matches("^[^\\{\\|\\*\\}\\[].*") && string.length() > 0) {
 				break;
 			}
 			i++;
@@ -321,10 +335,10 @@ public class WikiTextParser {
 		return begin;
 	}
 
-	private int getLastIndex() {
-		int indexOf = wikiText.indexOf("==");
+	private int getLastIndex(String text) {
+		int indexOf = text.indexOf("==");
 		if (indexOf == -1) {
-			return wikiText.length();
+			return text.length();
 		}
 		return indexOf;
 	}
@@ -342,5 +356,39 @@ public class WikiTextParser {
 			}
 		}
 		return oldtmp;
+	}
+
+	public String clearCitation(String text) {
+		StringBuffer sb = new StringBuffer();
+		int open = 0;
+
+		for (int idx = 0; idx < text.length();) {
+			if (open == 0) {
+				int indexOf = text.indexOf("{{", idx);
+				if (indexOf == -1) {
+					indexOf = text.length();
+				}
+				if ((indexOf - idx) > 5)
+					sb.append(text.substring(idx, indexOf));
+				open++;
+				idx = indexOf + 1;
+			} else {
+				int indexOfO = text.indexOf("{{", idx);
+
+				int indexOfE = text.indexOf("}}", idx);
+				if (indexOfO == -1 || indexOfE == -1) {
+					break;
+				}
+				if (indexOfO < indexOfE) {
+					open++;
+					idx = indexOfO + 1;
+				} else {
+					open--;
+					idx = indexOfE + 1;
+				}
+			}
+
+		}
+		return sb.toString();
 	}
 }

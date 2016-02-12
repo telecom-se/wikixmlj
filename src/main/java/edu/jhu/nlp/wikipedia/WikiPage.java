@@ -12,7 +12,9 @@ public class WikiPage {
 
 	private String title = null;
 	private WikiTextParser wikiTextParser = null;
-	private String id = null;
+	private long id;
+	private long revisionID = 0;
+	private NameSpace ns;
 
 	/**
 	 * Set the page title. This is not intended for direct use.
@@ -131,12 +133,28 @@ public class WikiPage {
 		return wikiTextParser.getLinks();
 	}
 
-	public void setID(String id) {
+	public NameSpace getNs() {
+		return ns;
+	}
+
+	public void setNs(NameSpace ns) {
+		this.ns = ns;
+	}
+
+	public void setID(long id) {
 		this.id = id;
 	}
 
-	public String getID() {
+	public long getID() {
 		return id;
+	}
+
+	public long getRevisionID() {
+		return revisionID;
+	}
+
+	public void setRevisionID(long revisionID) {
+		this.revisionID = revisionID;
 	}
 
 	public String getFirstParagraph() {

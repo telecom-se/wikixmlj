@@ -12,60 +12,76 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class SAXPageCallbackHandler extends DefaultHandler {
 
-    private PageCallbackHandler pageHandler;
-    private WikiPage currentPage;
-    private String currentTag;
+	private PageCallbackHandler pageHandler;
+	private WikiPage currentPage;
+	private String currentTag;
 
-    private StringBuilder currentWikitext;
-    private StringBuilder currentTitle;
-    private StringBuilder currentID;
-    private String language = null;
+	// Current largest article is 784K
+	private StringBuilder currentWikitext = new StringBuilder(1_000_000);
+	private StringBuilder currentTitle = new StringBuilder(200);
+	private StringBuilder currentID = new StringBuilder(20);
+	private StringBuilder revisionID = new StringBuilder(20);
+	private StringBuilder ns = new StringBuilder(4);
+	private String language = null;
 
+	public SAXPageCallbackHandler(PageCallbackHandler pageHandler, String language) {
+		this.pageHandler = pageHandler;
+		this.language = language;
+	}
 
-    public SAXPageCallbackHandler(PageCallbackHandler pageHandler, String language){
-        this.pageHandler = pageHandler;
-        this.language = language;
-    }
+	@Override
+	public void startElement(String uri, String name, String qName, Attributes attr) {
+		currentTag = qName;
+		if (qName.equals("page")) {
+			currentPage = new WikiPage();
+			currentWikitext.setLength(0);
+			currentTitle.setLength(0);
+			currentID.setLength(0);
+			revisionID.setLength(0);
+			ns.setLength(0);
 
-    @Override
-    public void startElement(String uri, String name, String qName, Attributes attr){
-        currentTag = qName;
-        if (qName.equals("page")){
-            currentPage = new WikiPage();
-            currentWikitext = new StringBuilder("");
-            currentTitle = new StringBuilder("");
-            currentID = new StringBuilder("");
-        }
-    }
+		}
+	}
 
-    @Override
-    public void endElement(String uri, String name, String qName){
-        if (qName.equals("page")){
-            currentPage.setTitle(currentTitle.toString());
-            currentPage.setID(currentID.toString());
-            currentPage.setWikiText(currentWikitext.toString(), language);
-            pageHandler.process(currentPage);
-        }
-        if (qName.equals("mediawiki"))
-        {
-            // TODO hasMoreElements() should now return false
-        }
-    }
+	@Override
+	public void endElement(String uri, String name, String qName) {
+		if (qName.equals("page")) {
+			currentPage.setTitle(currentTitle.toString());
+			currentPage.setID(Long.parseLong(currentID.toString()));
+			currentPage.setWikiText(currentWikitext.toString(), language);
+			if (ns.length() > 0){
+				String string = ns.toString().trim();
+				currentPage.setNs(NameSpace.valueOf(Integer.parseInt(string)));
+			}
+			pageHandler.process(currentPage);
+		}
+		if (qName.equals("mediawiki")) {
+			// TODO hasMoreElements() should now return false
+		}
+	}
 
-    @Override
-    public void characters(char ch[], int start, int length){
-        if (currentTag.equals("title")){
-            currentTitle = currentTitle.append(ch, start, length);
-        }
-        // TODO: To avoid looking at the revision ID, only the first ID is taken.
-        // I'm not sure how big the block size is in each call to characters(),
-        // so this may be unsafe.
-        else if ((currentTag.equals("id")) && (currentID.length() == 0)){
-            currentID = new StringBuilder();
-            currentID.append(ch, start, length);
-        }
-        else if (currentTag.equals("text")){
-            currentWikitext = currentWikitext.append(ch, start, length);
-        }
-    }
+	@Override
+	public void characters(char ch[], int start, int length) {
+		if (currentTag.equals("title")) {
+			currentTitle = currentTitle.append(ch, start, length);
+		}
+		// TODO: To avoid looking at the revision ID, only the first ID is
+		// taken.
+		// I'm not sure how big the block size is in each call to characters(),
+		// so this may be unsafe.
+		else if ((currentTag.equals("id"))) {
+
+			// First ID - the page one
+			if (currentID.length() == 0) {
+				currentID.append(ch, start, length);
+			} else {
+				// Already something, so this is the second one
+				revisionID.append(ch, start, length);
+			}
+		} else if (currentTag.equals("text")) {
+			currentWikitext = currentWikitext.append(ch, start, length);
+		} else if (currentTag.equals("ns")) {
+			ns.append(ch, start, length);
+		}
+	}
 }
