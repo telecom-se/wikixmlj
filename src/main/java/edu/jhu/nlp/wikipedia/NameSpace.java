@@ -14,8 +14,14 @@ public enum NameSpace {
 		this.value = value;
 	}
 
-	int value;
+	public final int value;
 
+	/**
+	 * O(n), n is small, do not care
+	 * 
+	 * @param value
+	 * @return
+	 */
 	static NameSpace valueOf(int value) {
 		NameSpace[] values = NameSpace.values();
 		for (int i = 0; i < values.length; i++) {

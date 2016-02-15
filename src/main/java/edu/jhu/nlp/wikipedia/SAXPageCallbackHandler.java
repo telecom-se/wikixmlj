@@ -23,6 +23,7 @@ public class SAXPageCallbackHandler extends DefaultHandler {
 	private StringBuilder revisionID = new StringBuilder(20);
 	private StringBuilder ns = new StringBuilder(4);
 	private String language = null;
+	private int iDcount;
 
 	public SAXPageCallbackHandler(PageCallbackHandler pageHandler, String language) {
 		this.pageHandler = pageHandler;
@@ -39,6 +40,7 @@ public class SAXPageCallbackHandler extends DefaultHandler {
 			currentID.setLength(0);
 			revisionID.setLength(0);
 			ns.setLength(0);
+			iDcount = 0;
 
 		}
 	}
@@ -48,8 +50,9 @@ public class SAXPageCallbackHandler extends DefaultHandler {
 		if (qName.equals("page")) {
 			currentPage.setTitle(currentTitle.toString());
 			currentPage.setID(Long.parseLong(currentID.toString()));
+			currentPage.setRevisionID(Long.parseLong(revisionID.toString().trim()));
 			currentPage.setWikiText(currentWikitext.toString(), language);
-			if (ns.length() > 0){
+			if (ns.length() > 0) {
 				String string = ns.toString().trim();
 				currentPage.setNs(NameSpace.valueOf(Integer.parseInt(string)));
 			}
@@ -70,11 +73,11 @@ public class SAXPageCallbackHandler extends DefaultHandler {
 		// I'm not sure how big the block size is in each call to characters(),
 		// so this may be unsafe.
 		else if ((currentTag.equals("id"))) {
-
+			iDcount++;
 			// First ID - the page one
 			if (currentID.length() == 0) {
 				currentID.append(ch, start, length);
-			} else {
+			} else if (iDcount == 3) {
 				// Already something, so this is the second one
 				revisionID.append(ch, start, length);
 			}

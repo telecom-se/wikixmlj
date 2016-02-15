@@ -61,6 +61,7 @@ public abstract class WikiXMLParser
         if (is != null) return new InputSource(is);
 
         final BufferedReader br;
+   
         if (wikiXMLFile.toExternalForm().endsWith(".gz")) {
             br = new BufferedReader(new InputStreamReader(new GZIPInputStream(wikiXMLFile.openStream()), "UTF-8"));
         } else if (wikiXMLFile.toExternalForm().endsWith(".bz2")) {
