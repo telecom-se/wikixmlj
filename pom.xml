@@ -84,8 +84,8 @@
 						<include>**/*</include>
 					</includes>
 					<merge>true</merge>
-					<repositoryName>inferray</repositoryName>
-					<repositoryOwner>jsubercaze</repositoryOwner>
+					<repositoryName>wikixmlj</repositoryName>
+					<repositoryOwner>telecom-se</repositoryOwner>
 				</configuration>
 				<executions>
 					<!-- run site-maven-plugin's 'site' target as part of the build's normal 
