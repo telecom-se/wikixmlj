@@ -1,5 +1,13 @@
 WikiXMLJ provides easy access to Wikipedia XML dumps.
 
+Enhancement in this fork
+------------------------
+
+* Maven self hosting
+* Namespaces extraction (article, discussion, book, category, ...)
+* Revision ID extraction
+* Infobox parsing into Hashmap
+
 Features
 --------
 
