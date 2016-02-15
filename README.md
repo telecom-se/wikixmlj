@@ -8,8 +8,8 @@ Enhancement in this fork
 * Revision ID extraction
 * Infobox parsing into Hashmap
 * Performance enhancement
-..* Lazy value computation on WikiPage
-..* Single Stringbuffer per field, initialized with adequate size
+    * Lazy value computation on WikiPage
+    * Single Stringbuffer per field, initialized with adequate size
 
 Maven usage
 -----------
