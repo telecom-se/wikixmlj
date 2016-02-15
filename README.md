@@ -7,6 +7,9 @@ Enhancement in this fork
 * Namespaces extraction (article, discussion, book, category, ...)
 * Revision ID extraction
 * Infobox parsing into Hashmap
+* Performance enhancement
+..* Lazy value computation on WikiPage
+..* Single Stringbuffer per field, initialized with adequate size
 
 Maven usage
 -----------
