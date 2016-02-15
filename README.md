@@ -8,6 +8,35 @@ Enhancement in this fork
 * Revision ID extraction
 * Infobox parsing into Hashmap
 
+Maven usage
+-----------
+
+This repository is self hosted. 
+
+
+First you need to setup the server in your pom.xml :
+
+
+    <repositories>
+      <repository>
+        <id>wikimxlj-mvn-repo</id>
+        <url>https://raw.github.com/telecom-se/wikixmlj/mvn-repo/</url>
+        <snapshots>
+            <enabled>true</enabled>
+            <updatePolicy>always</updatePolicy>
+        </snapshots>
+      </repository>
+    </repositories>
+
+Then use the following dependency :
+
+    <dependency>
+      <groupId>fr.ujm.tse</groupId>
+      <artifactId>wikixmlj</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+
+
 Features
 --------
 
