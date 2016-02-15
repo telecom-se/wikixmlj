@@ -49,8 +49,12 @@ public class SAXPageCallbackHandler extends DefaultHandler {
 	public void endElement(String uri, String name, String qName) {
 		if (qName.equals("page")) {
 			currentPage.setTitle(currentTitle.toString());
-			currentPage.setID(Long.parseLong(currentID.toString()));
-			currentPage.setRevisionID(Long.parseLong(revisionID.toString().trim()));
+			String stringid = currentID.toString().trim();
+			if (stringid.length() > 0)
+				currentPage.setID(Long.parseLong(stringid));
+			String stringRevisionID = revisionID.toString().trim();
+			if (stringRevisionID.length() > 0)
+				currentPage.setRevisionID(Long.parseLong(stringRevisionID));
 			currentPage.setWikiText(currentWikitext.toString(), language);
 			if (ns.length() > 0) {
 				String string = ns.toString().trim();
