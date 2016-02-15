@@ -105,7 +105,13 @@ All dependencies are packaged into this source. The dependencies might have diff
 Apache Xerces DOM parser for lazy loading.
 Optionally uses bzip2 code refactored by Kohsuke Kawaguchi from Apache's Ant project.
 
-Contributors
+Contributors to this fork
+-------------------------
+
+* [Julien Subercaze](http://satin-ppl.telecom-st-etienne.fr/jsubercaze/)
+* Tanguy Raynaud
+
+Original Contributors
 ------------
 Jason Smith<br>
 Itamar Syn-Hershko (@synhershko)<br>
