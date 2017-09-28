@@ -1,10 +1,10 @@
 package edu.jhu.nlp.wikipedia;
 
-import edu.jhu.nlp.language.Language;
-
 import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import edu.jhu.nlp.language.Language;
 
 /**
  * For internal use only -- Used by the {@link WikiPage} class. Can also be used
@@ -54,6 +54,7 @@ public class WikiTextParser {
 	boolean foundRedirect = false;
 	boolean computeStub = false;
 	boolean computeDisambiguate = false;
+	private int endOfInfobox = 0;
 
 	/**
 	 * Default constructor
@@ -222,6 +223,7 @@ public class WikiTextParser {
 	// TODO: ignore brackets in html/xml comments (or better still implement a
 	// formal grammar for wiki markup)
 	private InfoBox parseInfoBox() throws WikiTextParserException {
+
 		final String INFOBOX_CONST_STR = "{{Infobox";
 		int startPos = wikiText.indexOf(INFOBOX_CONST_STR);
 		if (startPos < 0)
@@ -247,6 +249,7 @@ public class WikiTextParser {
 		}
 
 		String infoBoxText = wikiText.substring(startPos, endPos + 1);
+		this.endOfInfobox = endPos + 1;
 		infoBoxText = stripCite(infoBoxText); // strip clumsy {{cite}} tags
 		// strip any html formatting
 		infoBoxText = infoBoxText.replaceAll("&gt;", ">");
@@ -299,13 +302,17 @@ public class WikiTextParser {
 		return null;
 	}
 
-	public String getSummary() {
-		String text = commentsCleanupPattern.matcher(wikiText).replaceAll("");
+	public String getSummary() throws WikiTextParserException {
+		String text = wikiText.substring(endOfInfobox);
+		text = commentsCleanupPattern.matcher(text).replaceAll("");
 		int startIndex = getFirstIndex2(text);
 		int endIndex = getLastIndex(text);
+		if (endIndex < startIndex) {
+			throw new WikiTextParserException("Could not extract summary, unable to detect");
+		}
 		text = text.substring(startIndex, endIndex);
 		// remove all citations
-		//text = clearCitation(text);
+		// text = clearCitation(text);
 		text = refCleanupPattern.matcher(text).replaceAll("");
 		text = curlyCleanupPattern0.matcher(text).replaceAll("");
 		text = curlyCleanupPattern1.matcher(text).replaceAll("");

@@ -158,6 +158,12 @@ public class WikiPage {
 	}
 
 	public String getFirstParagraph() {
-		return wikiTextParser.getSummary();
+		try {
+			return wikiTextParser.getSummary();
+		} catch (WikiTextParserException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
 	}
 }
