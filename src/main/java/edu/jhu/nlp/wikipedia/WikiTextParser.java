@@ -1,5 +1,7 @@
 package edu.jhu.nlp.wikipedia;
 
+import static org.hamcrest.CoreMatchers.startsWith;
+
 import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -48,6 +50,9 @@ public class WikiTextParser {
 	private static final Pattern chevronPattern = Pattern.compile("<.*?>", Pattern.MULTILINE | Pattern.DOTALL);
 	private static final Pattern commentsCleanupPattern = Pattern.compile("<!--.*?-->",
 			Pattern.MULTILINE | Pattern.DOTALL);
+
+	private static final Pattern FILE = Pattern.compile("\\[\\[File:(.*?)\\]\\]", Pattern.MULTILINE | Pattern.DOTALL);
+	private static final Pattern IMAGE = Pattern.compile("\\[\\[Image:(.*?)\\]\\]", Pattern.MULTILINE | Pattern.DOTALL);
 
 	private static final Language EN = new Language("en");
 
@@ -302,10 +307,12 @@ public class WikiTextParser {
 		return null;
 	}
 
-	public String getSummary() throws WikiTextParserException {
+	public String getSummary(String title) throws WikiTextParserException {
 		String text = wikiText.substring(endOfInfobox);
 		text = commentsCleanupPattern.matcher(text).replaceAll("");
-		int startIndex = getFirstIndex2(text);
+		text = FILE.matcher(text).replaceAll("");
+		text = IMAGE.matcher(text).replaceAll("");
+		int startIndex = getFirstIndex2(text, title);
 		int endIndex = getLastIndex(text);
 		if (endIndex < startIndex) {
 			throw new WikiTextParserException("Could not extract summary, unable to detect");
@@ -323,10 +330,12 @@ public class WikiTextParser {
 
 	}
 
-	private int getFirstIndex2(String text) {
+	private int getFirstIndex2(String text, String title) {
 		String[] split = text.split("\\n");
 		int i = 0;
 		for (String string : split) {
+			if (string.contains("'''" + title + "'''") || string.startsWith("[[" + title + "]]"))
+				break;
 			if (string.trim().matches("^[^\\{\\|\\*\\}\\[].*") && string.length() > 0) {
 				break;
 			}

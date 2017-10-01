@@ -14,6 +14,9 @@ public class InfoBox {
 
 	InfoBox(String infoBoxWikiText) {
 		this.infoBoxWikiText = infoBoxWikiText;
+	}
+
+	public void extractInfobox(String infoBoxWikiText) {
 		String[] split = infoBoxWikiText.split("\\n");
 		boxMap = new HashMap<>(split.length);
 		for (String string : split) {

@@ -159,7 +159,7 @@ public class WikiPage {
 
 	public String getFirstParagraph() {
 		try {
-			return wikiTextParser.getSummary();
+			return wikiTextParser.getSummary(null);
 		} catch (WikiTextParserException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
