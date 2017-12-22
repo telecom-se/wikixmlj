@@ -1,7 +1,5 @@
 package edu.jhu.nlp.wikipedia;
 
-import static org.hamcrest.CoreMatchers.startsWith;
-
 import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
